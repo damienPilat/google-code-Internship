@@ -15,7 +15,15 @@ class VideoPlayer:
         self._video_paused = False
         self._user_playlists = {}
 
-    # Return All User Playlists -> Object
+    @property
+    def all_videos(self):
+        """Returns List of all """
+        return self._video_library.get_all_videos()
+
+    def get_video(self, video_id):
+        """Returns video from video id or None"""
+        return self._video_library.get_video(video_id)
+
     def get_user_playlists(self):
         """Returns the user playlists stored -> List"""
         return self._user_playlists
