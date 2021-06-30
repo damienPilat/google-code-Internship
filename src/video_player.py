@@ -59,15 +59,7 @@ class VideoPlayer:
     def show_all_videos(self):
         """PRINT all videos"""
         all_videos = self.all_videos                                        # Get all videos
-        videos_resulting_array = []                                         # Array to store resulting strings
-
-        for video in all_videos:                                            # Loop through all videos
-            video_to_string = self.string_video_detail(video)               # Generic video to string
-            if video.flag:                                                  # Check if video has flag
-                video_to_string += f" - FLAGGED (reason: {video.flag})"     # Append Flag tag to string
-            videos_resulting_array.append(video_to_string)
-
-        videos_resulting_array.sort()                                       # Alphabetic order for Results
+        videos_resulting_array = self.videos_to_string_array(all_videos)    # Array to store resulting strings
 
         print("Here's a list of all available videos:")                     # Print Header
         print('\n'.join(map(str, videos_resulting_array)))                  # Join and Print all videos
@@ -192,19 +184,6 @@ class VideoPlayer:
         else:
             self._user_playlists[playlist_name] = Playlist(playlist_name)   # Add playlist to List
             print(f"Successfully created new playlist: {playlist_name}")    # Print: Playlist added
-
-    def check_playlist_exists(self, playlist_name):
-        """Check if Playlist already exists - case insensitive
-
-            Args: playlist_name - playlist name to check for.
-        """
-        if len(self._user_playlists) == 0:                                  # EXIT : If no playlist in list
-            return False
-
-        for playlist in self._user_playlists:                               # Loop through playlists
-            if playlist.upper() == playlist_name.upper():                   # Compare playlist name - case insensitive
-                return True
-        return False
 
     def add_to_playlist(self, playlist_name, video_id):
         """Adds a video to a playlist with a given name.
@@ -370,27 +349,6 @@ class VideoPlayer:
         print_search_results()                                      # Print search results
         user_response_logic()                                       # Deal with user response
 
-    def search_term_in_video_title(self, search_term, video):
-        """Searches for search term in video title - Case insensitive
-           Disregards videos with flags
-
-        Args:
-            search_term: The query to be used in search.
-            video: Specified video instance
-
-        Return:
-            Boolean if term in title.
-        """
-        if video.flag:                                              # Exit if video has flag
-            return False
-
-        video_title = video.title.upper()                           # Get video title (uppercase)
-
-        term_starts_at = video_title.find(search_term.upper())      # Look for search_term in video_title
-        if term_starts_at >= 0:                                     # Term found if index has positive value
-            return True
-        return False
-
     def search_videos_tag(self, video_tag):
         """Display all videos whose tags contains the provided tag.
 
@@ -408,23 +366,6 @@ class VideoPlayer:
             print(f"No search results for {video_tag}")
         else:                                                       # Match found
             self.search_results_logic(video_tag, search_match_videos)   # Apply Search results logic
-
-    def search_tag_in_video(self, video_tag, video):
-        """Searches for video tag in videos - case insensitive
-
-        Args:
-            video_tag: user provided tag to be searched
-            video: Specified Video instance
-
-        Return:
-            Boolean if term in tags
-        """
-        if video.flag:                                              # Exit if video has flag
-            return False
-        for tag in video.tags:                                      # Loop through video tags
-            if tag.upper() == video_tag.upper():                    # Check if tag matches (case insensitive)
-                return True
-        return False
 
     # ------
     # PART 4
@@ -467,7 +408,85 @@ class VideoPlayer:
         else:                                                                   # No video
             print("Cannot remove flag from video: Video does not exist")            # Err - no video
 
+    # ----------------
+    # HELPER FUNCTIONS
+    # ----------------
     def string_video_detail(self, video):
         """Convert a videos details to string"""
         tag_string = ' '.join(map(str, video.tags))
         return f"{video.title} ({video.video_id}) [{tag_string}]"
+
+    def videos_to_string_array(self, all_videos):
+        """Create String array of all videos
+
+        Args: all_videos - List of all videos to convert
+
+        Return: String array of videos
+        """
+        _videos_resulting_array = []                                        # Temp array to store resulting strings
+        for video in all_videos:                                            # Loop through all videos
+            _videos_resulting_array.append(self.get_video_to_string(video))
+        _videos_resulting_array.sort()                                      # Alphabetic order for Results
+        return _videos_resulting_array
+
+    def get_video_to_string(self, video):
+        """Return String conversion of Video details + flag status
+
+        Args: video - Video instance to get details from
+        Return: String of video details
+        """
+        video_to_string = self.string_video_detail(video)                   # Default video to string
+        if video.flag:                                                      # Check if video has flag
+            video_to_string += f" - FLAGGED (reason: {video.flag})"         # Append Flag tag to string
+        return video_to_string
+
+    def check_playlist_exists(self, playlist_name):
+        """Check if Playlist already exists - case insensitive
+
+            Args: playlist_name - playlist name to check for.
+        """
+        if len(self._user_playlists) == 0:                                  # EXIT : If no playlist in list
+            return False
+
+        for playlist in self._user_playlists:                               # Loop through playlists
+            if playlist.upper() == playlist_name.upper():                   # Compare playlist name - case insensitive
+                return True
+        return False
+
+    def search_term_in_video_title(self, search_term, video):
+        """Searches for search term in video title - Case insensitive
+           Disregards videos with flags
+
+        Args:
+            search_term: The query to be used in search.
+            video: Specified video instance
+
+        Return:
+            Boolean if term in title.
+        """
+        if video.flag:                                              # Exit if video has flag
+            return False
+
+        video_title = video.title.upper()                           # Get video title (uppercase)
+
+        term_starts_at = video_title.find(search_term.upper())      # Look for search_term in video_title
+        if term_starts_at >= 0:                                     # Term found if index has positive value
+            return True
+        return False
+
+    def search_tag_in_video(self, video_tag, video):
+        """Searches for video tag in videos - case insensitive
+
+        Args:
+            video_tag: user provided tag to be searched
+            video: Specified Video instance
+
+        Return:
+            Boolean if term in tags
+        """
+        if video.flag:                                              # Exit if video has flag
+            return False
+        for tag in video.tags:                                      # Loop through video tags
+            if tag.upper() == video_tag.upper():                    # Check if tag matches (case insensitive)
+                return True
+        return False
