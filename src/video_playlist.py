@@ -14,12 +14,15 @@ class Playlist:
 
     @property
     def get_all_video_ids(self):
+        """Return all video ids stored"""
         return self._video_ids
 
     def remove_video_from_playlist(self, video_id):
+        """Remove Video from playlist by id"""
         self._video_ids.remove(video_id)
 
     def remove_all_videos(self):
+        """Remove all videos from playlist"""
         self._video_ids = []
 
     def add_video(self, video_id):
